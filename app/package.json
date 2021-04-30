@@ -1,8 +1,7 @@
 {
-  "name": "app",
+  "name": "StarNotaryEthereum",
   "version": "1.0.0",
-  "description": "",
-  "private": true,
+  "description": "A Star Exchange Built on Ethereum",
   "scripts": {
     "build": "webpack",
     "dev": "webpack-dev-server"
@@ -14,7 +13,10 @@
     "webpack-dev-server": "^3.1.14"
   },
   "dependencies": {
+    "@openzeppelin/cli": "^2.8.2",
+    "openzeppelin-solidity": "^4.0.0",
     "truffle-hdwallet-provider": "^1.0.17",
+    "web3-provider-engine": "^16.0.1",
     "web3": "^1.3.5"
   }
 }

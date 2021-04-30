@@ -1,4 +1,4 @@
-pragma solidity >=0.4.24;
+pragma solidity 0.5.2;
 
 //Importing openzeppelin-solidity ERC-721 implemented Standard
 import "../node_modules/openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
@@ -6,9 +6,22 @@ import "../node_modules/openzeppelin-solidity/contracts/token/ERC721/ERC721.sol"
 // StarNotary Contract declaration inheritance the ERC721 openzeppelin implementation
 contract StarNotary is ERC721 {
 
+    string public constant name = "Udacity Star Token";
+    string public constant symbol = "STR";
+    string public constant successfulTransferMessage = "You successfully transferred your star";
+    address public owner;
+
     // Star data
     struct Star {
         string name;
+        string symbol;
+    }
+
+    event TransferredStar(uint _starId);
+
+    constructor() public {
+        require(msg.sender != address(0));
+        owner = msg.sender;
     }
 
     // Implement Task 1 Add a name and symbol properties
@@ -21,13 +34,21 @@ contract StarNotary is ERC721 {
     // mapping the TokenId and price
     mapping(uint256 => uint256) public starsForSale;
 
+    function getTokenSymbol() public view returns (string memory) {
+        return symbol;
+    }
+
+    function getStarSymbol(uint _tokenId) public view returns (string memory){
+        return tokenIdToStarInfo[_tokenId].symbol;
+    }
     
     // Create Star using the Struct
     function createStar(string memory _name, uint256 _tokenId) public { // Passing the name and tokenId as a parameters
-        Star memory newStar = Star(_name); // Star is an struct so we are creating a new Star
+        string memory mysymbol = getTokenSymbol();
+        Star memory newStar = Star(_name, mysymbol); // Star is an struct so we are creating a new Star
         tokenIdToStarInfo[_tokenId] = newStar; // Creating in memory the Star -> tokenId mapping
         _mint(msg.sender, _tokenId); // _mint assign the the star with _tokenId to the sender address (ownership)
-    }
+   }
 
     // Putting an Star for sale (Adding the star tokenid into the mapping starsForSale, first verify that the sender is the owner)
     function putStarUpForSale(uint256 _tokenId, uint256 _price) public {
@@ -57,20 +78,39 @@ contract StarNotary is ERC721 {
     // Implement Task 1 lookUptokenIdToStarInfo
     function lookUptokenIdToStarInfo (uint _tokenId) public view returns (string memory) {
         //1. You should return the Star saved in tokenIdToStarInfo mapping
+        Star memory star = tokenIdToStarInfo[_tokenId];
+        if(bytes(star.name).length == 0 ){
+            return "No Star with this id";
+        } else {
+            return star.name;
+        }
     }
 
     // Implement Task 1 Exchange Stars function
     function exchangeStars(uint256 _tokenId1, uint256 _tokenId2) public {
         //1. Passing to star tokenId you will need to check if the owner of _tokenId1 or _tokenId2 is the sender
-        //2. You don't have to check for the price of the token (star)
         //3. Get the owner of the two tokens (ownerOf(_tokenId1), ownerOf(_tokenId1)
+        address owner1 = ownerOf(_tokenId1);
+        address owner2 = ownerOf(_tokenId2);
+        require(msg.sender == owner1 || msg.sender == owner2, "You don't own either of these tokens");
         //4. Use _transferFrom function to exchange the tokens.
+        if(msg.sender == owner1){
+            _transferFrom(msg.sender, owner2, _tokenId1);
+            _transferFrom(owner2, msg.sender, _tokenId2);
+        } else {
+            _transferFrom(msg.sender, owner1, _tokenId2);
+            _transferFrom(owner1, msg.sender, _tokenId1);
+        }
     }
 
     // Implement Task 1 Transfer Stars
     function transferStar(address _to1, uint256 _tokenId) public {
-        //1. Check if the sender is the ownerOf(_tokenId)
+        //1. Check if the sender is the ownerOf(_tokenId) -> NOT NEEDED, THIS IS IMPLEMENTED IN ERC 721's transferFrom
+        //require(msg.sender == ownerOf(_tokenId), "This star doesn't belong to you");
+        require(_to1 != address(0), "Are you sending this star back to the zero address?");
         //2. Use the transferFrom(from, to, tokenId); function to transfer the Star
+        transferFrom(msg.sender, _to1, _tokenId);
+        emit TransferredStar(_tokenId);
     }
 
 }

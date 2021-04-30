@@ -17,7 +17,6 @@ const App = {
         starNotaryArtifact.abi,
         deployedNetwork.address,
       );
-
       // get accounts
       const accounts = await web3.eth.getAccounts();
       this.account = accounts[0];
@@ -41,7 +40,13 @@ const App = {
 
   // Implement Task 4 Modify the front end of the DAPP
   lookUp: async function (){
-    
+    const { lookUptokenIdToStarInfo } = this.meta.methods;
+    console.log(document.getElementById("lookid").value);
+    const id = parseInt(document.getElementById("lookid").value);
+    if(!(id > 0)){ alert('Star IDs are positive integers only'); return }
+    let starName = await lookUptokenIdToStarInfo(id).call();
+    console.log("STAR NAME IS :", starName);
+    document.getElementById("givenStarName").innerText = starName;
   }
 
 };
